@@ -13,14 +13,32 @@ class CommissionCalculator {
         $this->rateProvider = $rateProvider;
     }
 
+    // public function calculate($transaction): string {
+    //     $isEu = $this->binProvider->isEu($transaction->bin);
+    //     $rate = $this->rateProvider->getRate($transaction->currency);
+    //     $amount = $transaction->amount;
+    //     if ($transaction->currency !== 'EUR') {
+    //         $amount = $amount / $rate;
+    //     }
+    //     $commission = $amount * ($isEu ? 0.01 : 0.02);
+    //     return number_format(ceil($commission * 100) / 100, 2);
+    // }
+
     public function calculate($transaction): string {
-        $isEu = $this->binProvider->isEu($transaction->bin);
-        $rate = $this->rateProvider->getRate($transaction->currency);
-        $amount = $transaction->amount;
-        if ($transaction->currency !== 'EUR') {
-            $amount = $amount / $rate;
+    $isEu = $this->binProvider->isEu($transaction->bin);
+    $rate = $this->rateProvider->getRate($transaction->currency);
+    $amount = $transaction->amount;
+
+    // Ensure rate is valid
+    if ($transaction->currency !== 'EUR') {
+        if ($rate == 0 || $rate === null) {
+            throw new \Exception("Exchange rate cannot be zero or null for currency: {$transaction->currency}");
         }
-        $commission = $amount * ($isEu ? 0.01 : 0.02);
-        return number_format(ceil($commission * 100) / 100, 2);
+        $amount = $amount / $rate;
     }
+
+    $commission = $amount * ($isEu ? 0.01 : 0.02);
+    return number_format(ceil($commission * 100) / 100, 2);
+}
+
 }
